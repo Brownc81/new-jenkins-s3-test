@@ -1,9 +1,14 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
-        AWS_DEFAULT_REGION = 'us-east-1'
-        TF_IN_AUTOMATION   = 'true'
+        AWS_DEFAULT_REGION  = 'us-east-1'
+        TF_IN_AUTOMATION    = 'true'
+        TF_PLUGIN_CACHE_DIR = '/var/lib/jenkins/.terraform.d/plugin-cache'
     }
 
     stages {
@@ -39,32 +44,25 @@ pipeline {
         }
 
         stage('Optional Destroy') {
+            when {
+                expression { return params.DESTROY == 'yes' }
+            }
             steps {
-                script {
-                    def destroyChoice = input(
-                        message: 'Do you want to run terraform destroy?',
-                        ok: 'Submit',
-                        parameters: [
-                            choice(
-                                name: 'DESTROY',
-                                choices: ['no', 'yes'],
-                                description: 'Select yes to destroy resources'
-                            )
-                        ]
-                    )
-
-                    if (destroyChoice == 'yes') {
-                        withCredentials([[
-                            $class: 'AmazonWebServicesCredentialsBinding',
-                            credentialsId: '400398151894'
-                        ]]) {
-                            sh 'terraform destroy -auto-approve'
-                        }
-                    } else {
-                        echo "Skipping destroy"
-                    }
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: '400398151894'
+                ]]) {
+                    sh 'terraform destroy -auto-approve'
                 }
             }
         }
+    }
+
+    parameters {
+        choice(
+            name: 'DESTROY',
+            choices: ['no', 'yes'],
+            description: 'Set to yes to destroy resources'
+        )
     }
 }
