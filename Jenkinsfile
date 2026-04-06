@@ -41,7 +41,7 @@ pipeline {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-iam-user-creds'
+                    credentialsId: '400398151894'
                 ]]) {
                     sh 'terraform init'
                 }
@@ -52,7 +52,7 @@ pipeline {
             steps {
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-iam-user-creds'
+                    credentialsId: '400398151894'
                 ]]) {
                     sh 'terraform plan'
                 }
@@ -77,7 +77,7 @@ pipeline {
                     if (destroyChoice == 'yes') {
                         withCredentials([[
                             $class: 'AmazonWebServicesCredentialsBinding',
-                            credentialsId: 'aws-iam-user-creds'
+                            credentialsId: '400398151894'
                         ]]) {
                             sh 'terraform destroy -auto-approve'
                         }
